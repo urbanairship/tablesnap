@@ -258,6 +258,7 @@ class UploadHandler(pyinotify.ProcessEvent):
         for r in range(self.retries):
             try:
                 key = bucket.new_key(keyname)
+                key.storage_class = 'STANDARD_IA'
                 key.set_contents_from_string(content,
                     headers={'Content-Type': content_type},
                     replace=True)
@@ -375,6 +376,7 @@ class UploadHandler(pyinotify.ProcessEvent):
                         key = bucket.new_key(keyname)
                         key.set_metadata('stat', meta)
                         key.set_metadata('md5sum', md5[0])
+                        key.storage_class = 'STANDARD_IA'
                         key.set_contents_from_filename(filename, replace=True,
                                                        cb=progress, num_cb=1,
                                                        md5=md5)
