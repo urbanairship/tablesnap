@@ -50,6 +50,9 @@ s3_limit = 5 * 2**30
 # Max file size to upload without doing multipart in MB
 max_file_size = 5120
 
+# Minimum size of files to classify as "Infrequent Access" in S3
+min_ia_size = 1 * 2**20
+
 # Default chunk size for multipart uploads in MB
 default_chunk_size = 256
 
@@ -258,7 +261,7 @@ class UploadHandler(pyinotify.ProcessEvent):
         for r in range(self.retries):
             try:
                 key = bucket.new_key(keyname)
-                key.storage_class = 'STANDARD_IA'
+                key.storage_class = 'STANDARD'
                 key.set_contents_from_string(content,
                     headers={'Content-Type': content_type},
                     replace=True)
@@ -376,7 +379,7 @@ class UploadHandler(pyinotify.ProcessEvent):
                         key = bucket.new_key(keyname)
                         key.set_metadata('stat', meta)
                         key.set_metadata('md5sum', md5[0])
-                        key.storage_class = 'STANDARD_IA'
+                        key.storage_class = 'STANDARD_IA' if stat.st_size > min_ia_size else 'STANDARD'
                         key.set_contents_from_filename(filename, replace=True,
                                                        cb=progress, num_cb=1,
                                                        md5=md5)
